@@ -40,6 +40,9 @@ export function handleApplicationErrors(
   if (err.name === 'PaymentRequiredError') {
     return res.status(httpStatus.PAYMENT_REQUIRED).send({ message: err.message });
   }
+  if (err.name === 'Forbidden') {
+    return res.status(httpStatus.FORBIDDEN).send({ message: err.message });
+  }
 
   /* eslint-disable-next-line no-console */
   console.error(err.name);
