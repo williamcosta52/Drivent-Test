@@ -15,3 +15,9 @@ export async function findBooking(userId: number) {
     include: { Room: true },
   });
 }
+export async function updateBooking(bookingId: number, roomId: number) {
+  return await prisma.booking.update({
+    data: { roomId },
+    where: { id: bookingId },
+  });
+}
