@@ -1,7 +1,6 @@
-import { Booking } from '@prisma/client';
 import { prisma } from '../../config';
 
-export async function createBookingDB(roomId: number, userId: number) {
+async function createBookingDB(roomId: number, userId: number) {
   return await prisma.booking.create({
     data: {
       roomId,
@@ -9,15 +8,22 @@ export async function createBookingDB(roomId: number, userId: number) {
     },
   });
 }
-export async function findBooking(userId: number) {
+async function findBooking(userId: number) {
   return await prisma.booking.findFirst({
     where: { userId },
     include: { Room: true },
   });
 }
-export async function updateBooking(bookingId: number, roomId: number) {
+async function updateBooking(bookingId: number, roomId: number) {
   return await prisma.booking.update({
     data: { roomId },
     where: { id: bookingId },
   });
 }
+
+const bookingRepository = {
+  updateBooking,
+  findBooking,
+  createBookingDB,
+};
+export default bookingRepository;

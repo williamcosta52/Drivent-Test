@@ -1,12 +1,14 @@
-import { forbiddenError, notFoundError } from '../../errors';
-import * as bookingRepository from '../../repositories/booking-repository/booking-repositories';
+import { forbiddenError, notFoundError, unauthorizedError } from '../../errors';
+import bookingRepository from '../../repositories/booking-repository';
 import enrollmentRepository from '../../repositories/enrollment-repository';
-import { getRoomById } from '../../repositories/room-repository/room-repository';
+import { getRoomById } from '../../repositories/room-repository';
 import ticketsRepository from '../../repositories/tickets-repository';
 
-export async function createBooking(roomId: number, userId: number) {
+async function createBooking(roomId: number, userId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) throw unauthorizedError();
   const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id);
+  if (!ticket) throw unauthorizedError();
   const ticketType = await ticketsRepository.findTickeWithTypeById(ticket.id);
   if (ticket.status !== 'PAID' || ticketType.TicketType.isRemote || !ticketType.TicketType.includesHotel) {
     throw forbiddenError();
@@ -16,14 +18,21 @@ export async function createBooking(roomId: number, userId: number) {
   if (room.capacity === 0) throw forbiddenError();
   return await bookingRepository.createBookingDB(roomId, userId);
 }
-export async function getBooking(userId: number) {
+async function getBooking(userId: number) {
   const booking = await bookingRepository.findBooking(userId);
   if (!booking) throw notFoundError();
   return booking;
 }
-export async function updateBooking(roomId: number, userId: number, bookingId: number) {
+async function updateBooking(roomId: number, userId: number, bookingId: number) {
   const booking = await bookingRepository.findBooking(userId);
   const room = await getRoomById(roomId);
   if (!booking || room.capacity === 0) throw forbiddenError();
   return await bookingRepository.updateBooking(bookingId, roomId);
 }
+
+const bookingService = {
+  updateBooking,
+  getBooking,
+  createBooking,
+};
+export default bookingService;
